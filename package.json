@@ -35,7 +35,9 @@
     "matchdep": "~0.1.2",
     "mocha": "~1.9.0",
     "sinon": "~1.7.3",
-    "requirejs": "^2.1.14"
+    "requirejs": "^2.1.14",
+    "ini": "~1.2.1",
+    "grunt-connect-rewrite": "~0.1.1"
   },
   "engines": {
     "node": ">=0.8.0"

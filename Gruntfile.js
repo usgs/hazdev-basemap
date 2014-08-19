@@ -2,6 +2,7 @@
 
 var LIVE_RELOAD_PORT = 35729;
 var lrSnippet = require('connect-livereload')({port: LIVE_RELOAD_PORT});
+var rewriteRulesSnippet = require('grunt-connect-rewrite/lib/utils').rewriteRequest;
 var gateway = require('gateway');
 
 var mountFolder = function (connect, dir) {
@@ -16,6 +17,18 @@ module.exports = function (grunt) {
 
 	// Load grunt tasks
 	require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+
+	var iniConfig = require('ini').parse(require('fs')
+			.readFileSync('./src/conf/config.ini', 'utf-8'));
+
+	var rewrites = {};
+	// BaseMap rewrites
+	rewrites['^' + iniConfig.MOUNT_PATH +
+			'/tiles/([^/]+)/([^/]+)/([^/]+)/([^/\\.]+)\\.(jpg|png)$'] =
+			'/getTileImage.php?layer=$1&zoom=$2&x=$3&y=$4&ext=$5';
+	rewrites['^' + iniConfig.MOUNT_PATH +
+			'/tiles/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.grid\\.json(\\?callback=(.*))?$'] =
+			'/getTileGrid.php?layer=$1&zoom=$2&x=$3&y=$4&callback=$6';
 
 	// App configuration, used throughout
 	var appConfig = {
@@ -79,6 +92,7 @@ module.exports = function (grunt) {
 			options: {
 				hostname: 'localhost'
 			},
+			rules: rewrites,
 			dev: {
 				options: {
 					base: '<%= app.src %>/htdocs',
@@ -86,6 +100,7 @@ module.exports = function (grunt) {
 					middleware: function (connect, options) {
 						return [
 							lrSnippet,
+							rewriteRulesSnippet,
 							mountFolder(connect, '.tmp'),
 							mountFolder(connect, 'node_modules'),
 							mountPHP(options.base),
@@ -102,7 +117,8 @@ module.exports = function (grunt) {
 					middleware: function (connect, options) {
 						return [
 							mountPHP(options.base),
-							mountFolder(connect, options.base)
+							mountFolder(connect, options.base),
+							rewriteRulesSnippet
 						];
 					}
 				}
@@ -113,6 +129,7 @@ module.exports = function (grunt) {
 					port: 8000,
 					middleware: function (connect, options) {
 						return [
+							rewriteRulesSnippet,
 							mountFolder(connect, '.tmp'),
 							mountFolder(connect, 'node_modules'),
 							mountFolder(connect, options.base),
@@ -285,6 +302,7 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('default', [
 		'clean:dist',
+		'configureRewriteRules',
 		'compass:dev',
 		'connect:test',
 		'connect:dev',
