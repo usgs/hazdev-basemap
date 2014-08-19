@@ -41,6 +41,10 @@ $layer_prefix = $TILE_DIR . DIRECTORY_SEPARATOR .
 			str_replace(DIRECTORY_SEPARATOR, '', $layer);
 $type = is_dir($layer_prefix) ? 'esri' : 'mbtiles';
 
+$image = null;
+$imageFile = null;
+$imageSize = null;
+
 if ($type === 'mbtiles') {
 	$row = abs($y - (pow(2, $zoom) - 1)); //y is 'flipped' in mbtiles (origin at BL) vs gmaps (origin at TL)
 	$col = $x;
@@ -84,13 +88,23 @@ if ($type === 'mbtiles') {
 			$level . DIRECTORY_SEPARATOR .
 			$row . DIRECTORY_SEPARATOR .
 			$col . '.' . $ext;
-	if (!file_exists($file)) {
-		header('HTTP/1.0 404 File Not Found');
-		exit();
-	}
-	$image = file_get_contents($file);
-	$last_mod	= filemtime($file);
 
+	if (file_exists($file)) {
+		$imageFile = $file;
+	}
+}
+
+if (!$image && !$imageFile) {
+	$imageFile = 'images/clear-256x256.png';
+}
+
+if ($imageFile) {
+	$last_mod = filemtime($imageFile);
+	$imageSize = filesize($imageFile);
+}
+
+if ($image) {
+	$imageSize = strlen($image);
 }
 
 $last_mod	= date('D, d M Y h:i:s T', $last_mod);
@@ -100,14 +114,17 @@ $expires = date('D, d M Y h:i:s T', strtotime('+1 month'));
 header('Content-Transfer-Encoding: binary');
 header("Content-Type: image/$ext");
 header('Cache-Control: public');
+header("Content-Length: $imageSize");
 header("Expires: $expires");
 header("Last-Modified: $last_mod");
 
-if ($image) {
+
+if ($imageFile) {
+	$fp = fopen($imageFile, 'rb');
+	fpassthru($fp);
+	fclose($fp);
+} else if ($image) {
 	echo $image;
-} else {
-	$empty_tile = file_get_contents('images/clear-256x256.png');
-	echo $empty_tile;
 }
 
 // convert x and y to ESRI (hex) format

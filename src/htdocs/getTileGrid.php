@@ -35,6 +35,9 @@ $callback = isset($_GET['callback']) ? $_GET['callback'] : 'grid';
 $row = abs($y - (pow(2, $zoom) - 1));
 $col = $x;
 
+if ($callback === '') {
+	$callback = 'grid';
+}
 
 // make sure database exists, then connect
 $layer_prefix = $TILE_DIR . DIRECTORY_SEPARATOR .
