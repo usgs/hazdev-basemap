@@ -16,51 +16,73 @@ $DOWNLOADS = array(
 // DOWNLOAD
 
 // check if user wants to download
-$answer = null;
-while ($answer === null) {
-	echo 'Download tile layers? [y/N]: ';
-	$answer = strtoupper(trim(fgets(STDIN)));
-	if ($answer === '') {
-		$answer = 'N';
-	} else if ($answer !== 'Y' && $answer !== 'N') {
-		$answer = null;
-		echo "\n";
-	}
-}
-if ($answer === 'N') {
-	return;
-}
-
-// download each layer's files
-foreach ($DOWNLOADS as $layer => $type) {
-	echo PHP_EOL . 'Downloading "' . $layer . '"' . PHP_EOL;
-	if ($type === 'mbtiles') {
-		$json = $layer . '.jsonp';
-		$mbtiles = $layer . '.mbtiles';
-		if (!downloadURL($DOWNLOAD_BASEURL . '/' . $json, $TILE_DIR . '/' . $json)) {
-			echo $json . ' already downloaded' . PHP_EOL;
+if (promptYesNo('Download tile layers?', true)) {
+	// download each layer's files
+	foreach ($DOWNLOADS as $layer => $type) {
+		echo PHP_EOL . 'Downloading "' . $layer . '"' . PHP_EOL;
+		if ($type === 'mbtiles') {
+			$json = $layer . '.jsonp';
+			$mbtiles = $layer . '.mbtiles';
+			if (!downloadURL($DOWNLOAD_BASEURL . '/' . $json, $TILE_DIR . '/' . $json)) {
+				echo $json . ' already downloaded' . PHP_EOL;
+			}
+			if (!downloadURL($DOWNLOAD_BASEURL . '/' . $mbtiles, $TILE_DIR . '/' . $mbtiles)) {
+				echo $mbtiles . ' already downloaded' . PHP_EOL;
+			}
+		} else if ($type === 'tar.gz') {
+			if (file_exists($TILE_DIR . '/' . $layer)) {
+				echo $layer . ' already downloaded' . PHP_EOL;
+				continue;
+			}
+			$tarfile = $layer . '.tar.gz';
+			$localTarfile = $TILE_DIR . '/' . $tarfile;
+			downloadURL($DOWNLOAD_BASEURL . '/' . $tarfile, $localTarfile);
+			echo 'Extracting' . PHP_EOL;
+			extractTarGz($localTarfile);
+		} else {
+			echo 'Unknown type "' . $type . '"';
+			exit(1);
 		}
-		if (!downloadURL($DOWNLOAD_BASEURL . '/' . $mbtiles, $TILE_DIR . '/' . $mbtiles)) {
-			echo $mbtiles . ' already downloaded' . PHP_EOL;
-		}
-	} else if ($type === 'tar.gz') {
-		if (file_exists($TILE_DIR . '/' . $layer)) {
-			echo $layer . ' already downloaded' . PHP_EOL;
-			continue;
-		}
-		$tarfile = $layer . '.tar.gz';
-		$localTarfile = $TILE_DIR . '/' . $tarfile;
-		downloadURL($DOWNLOAD_BASEURL . '/' . $tarfile, $localTarfile);
-		echo 'Extracting' . PHP_EOL;
-		extractTarGz($localTarfile);
-	} else {
-		echo 'Unknown type "' . $type . '"';
-		exit(1);
 	}
 }
 
 
 // UTILITY FUNCTIONS
+
+/**
+ * Prompt user with a yes or no question.
+ *
+ * @param $prompt {String}
+ *        yes or no question, should include question mark if desired.
+ * @param $default {Boolean}
+ *        default null (user must enter y or n).
+ *        true for yes to be default answer, false for no.
+ *        default answer is used when user presses enter with no other input.
+ * @return {Boolean} true if user entered yes, false if user entered no.
+ */
+function promptYesNo ($prompt='Yes or no?', $default=null) {
+	$question = $prompt . ' [' .
+			($default === true ? 'Y' : 'y') . '/' .
+			($default === false ? 'N' : 'n') . ']: ';
+
+	$answer = null;
+	while ($answer === null) {
+		echo $question;
+		$answer = strtoupper(trim(fgets(STDIN)));
+		if ($answer === '') {
+			if ($default === true) {
+				$answer = 'Y';
+			} else if ($default === false) {
+				$answer = 'N';
+			}
+		}
+		if ($answer !== 'Y' && $answer !== 'N') {
+			$answer = null;
+			echo PHP_EOL;
+		}
+	}
+	return ($answer === 'Y');
+}
 
 /**
  * Download a URL into a file.
@@ -77,6 +99,9 @@ foreach ($DOWNLOADS as $layer => $type) {
 function downloadURL ($source, $dest, $showProgress=true) {
 	if (file_exists($dest)) {
 		return false;
+	}
+	if ($showProgress) {
+		echo 'Downloading "' . $source . '"' . PHP_EOL;
 	}
 	$curl = curl_init();
 	$file = fopen($dest, 'wb');
