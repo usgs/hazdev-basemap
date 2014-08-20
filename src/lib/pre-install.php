@@ -48,6 +48,11 @@ file_put_contents($HTTPD_CONF, '
 	Alias ' . $MOUNT_PATH . ' ' . $DATA_DIR . '
 	Alias ' . $MOUNT_PATH . '_htdocs ' . $HTDOCS_DIR . '
 
+	# if file exists, serve it
+	RewriteCond %{REQUEST_URI} ^' . $MOUNT_PATH . '/(.*(png|jpg))$
+	RewriteCond ' . $DATA_DIR . '/%1 -f
+	RewriteRule .* - [L,PT]
+
 	# php script for retrieving mbtiles / esri map tiles
 	RewriteRule ^' . $MOUNT_PATH . '/tiles/([^/]+)/(\d+)/(\d+)/(\d+)\.(png|jpg)$ ' .
 			$MOUNT_PATH . '_htdocs/getTileImage.php?layer=$1&zoom=$2&x=$3&y=$4&ext=$5 [L,PT]
