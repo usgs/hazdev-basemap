@@ -30,7 +30,7 @@
 	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
 	<script src="http://danzel.github.io/Leaflet.utfgrid/src/leaflet.utfgrid.js"></script>
 	<script>
-		var basemap, overlay, utfGrid, map, hover;
+		var basemap, overlay, utfGrid, ushaz, map, hover;
 
 		basemap = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 			maxZoom: 18,
@@ -50,9 +50,11 @@
 			hover.style.top = (e.clientY + 8) + 'px';
 		});
 
+		ushaz = L.tileLayer('/basemap/tiles/ushaz/{z}/{x}/{y}.png');
 		map = L.map('map').
 				setView([34, -118], 9).
 				addLayer(basemap).
+				addLayer(ushaz).
 				addLayer(overlay).addLayer(utfGrid);
 
 		hover = document.querySelector('#hover');
