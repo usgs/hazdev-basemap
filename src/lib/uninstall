@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 
-push `dirname $0` > /dev/null 2>&1;
+pushd `dirname $0` > /dev/null 2>&1;
 
-configFile='../conf/config.ini';
-httpdFile='../conf/httpd.conf';
+PHP_BIN=`which php`;
 
-# Remove httpd config file, but leave the config INI file in place
-rm -vf ../httpd.conf;
+if [ -z "$PHP_BIN" ]; then
+	read -p 'PHP executable not found, enter path to php: ' PHP_BIN;
+fi
+
+if [ -x "$PHP_BIN" ]; then
+	$PHP_BIN ./uninstall.php
+else
+	echo 'PHP executable not found, unable to run uninstall.php';
+	exit 1;
+fi
 
 popd > /dev/null 2>&1;
-
 exit 0;
