@@ -133,7 +133,8 @@ module.exports = function (grunt) {
 							mountFolder(connect, '.tmp'),
 							mountFolder(connect, 'node_modules'),
 							mountFolder(connect, options.base),
-							mountFolder(connect, appConfig.src + '/htdocs/js')
+							mountFolder(connect, appConfig.src + '/htdocs/js'),
+							mountPHP(appConfig.src + '/htdocs')
 						];
 					}
 				}
