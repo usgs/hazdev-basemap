@@ -38,7 +38,7 @@ if (promptYesNo('Download tile layers?', true)) {
 			$localTarfile = $TILE_DIR . '/' . $tarfile;
 			downloadURL($DOWNLOAD_BASEURL . '/' . $tarfile, $localTarfile);
 			echo 'Extracting' . PHP_EOL;
-			extractTarGz($localTarfile);
+			extractTarGz($localTarfile, $TILE_DIR);
 		} else {
 			echo 'Unknown type "' . $type . '"';
 			exit(1);
