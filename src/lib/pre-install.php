@@ -78,4 +78,16 @@ file_put_contents($HTTPD_CONF, '
 		ExpiresActive on
 		ExpiresDefault "access plus 1 years"
 	</Location>
+
+	<Location ' . $MOUNT_PATH . '_htdocs>
+		Order allow,deny
+		Allow from all
+
+		<LimitExcept GET>
+			deny from all
+		</LimitExcept>
+
+		ExpiresActive on
+		ExpiresDefault "access plus 1 years"
+	</Location>
 ');
