@@ -31,8 +31,15 @@ $zoom		= intval($_GET['zoom']);
 $layer	= $_GET['layer'];
 $callback = isset($_GET['callback']) ? $_GET['callback'] : 'grid';
 
+// range check for x and y
+$n = pow(2, $zoom) - 1;
+if ($x > $n || $y > $n) {
+	header('HTTP/1.0 404 File Not Found');
+	exit();
+}
+
 // y is 'flipped' in mbtiles (origin at BL) vs gmaps (origin at TL)
-$row = abs($y - (pow(2, $zoom) - 1));
+$row = abs($y - $n);
 $col = $x;
 
 if ($callback === '') {
@@ -48,50 +55,56 @@ if (!file_exists($db_file)) {
 	exit();
 }
 $db = new PDO('sqlite:' . $db_file);
+// use .jsonp file as a proxy to .mbtiles because php's filemtime fails for
+// .mbtiles (I think b/c it's > 2 GB)
+$mod = filemtime($layer_prefix . '.jsonp');
+$expires = date('D, d M Y h:i:s T', strtotime('+1 month'));
 
 
 // Set content type headers regardless of whether there is data or not.
-$jsonp_file = $layer_prefix . '.jsonp';
-// use .jsonp file as a proxy to .mbtiles because php's filemtime fails for
-// .mbtiles (I think b/c it's > 2 GB)
-$mod = filemtime($jsonp_file);
-$expires = date('D, d M Y h:i:s T', strtotime('+1 month'));
 header('Content-Type: text/javascript');
 header('Cache-Control: public');
 header("Last-Modified: $mod");
 header("Expires: $expires");
 
-
 // get utfgrid data from db
 $statement = $db->prepare('SELECT grid FROM grids' .
-		' WHERE zoom_level=:zoom AND tile_column=:col AND tile_row=:row');
-$statement->execute(array(
-		'zoom' => $zoom,
-		'col' => $col,
-		'row' => $row));
+		' WHERE zoom_level=? AND tile_column=? AND tile_row=?');
+$statement->bindParam(1, $zoom, PDO::PARAM_INT);
+$statement->bindParam(2, $col, PDO::PARAM_INT);
+$statement->bindParam(3, $row, PDO::PARAM_INT);
+$statement->execute();
 $grid = $statement->fetch(PDO::FETCH_ASSOC);
-if (!$grid) {
-	exit();
+$statement = null;
+if (!isset($grid['grid'])) {
+	// no data
+	$json = 'null';
+} else {
+	$utfgrid = gzinflate(substr($grid['grid'], 2));
+
+	// get feature data from db
+	$features = array();
+	$statement = $db->prepare('SELECT key_name, key_json FROM grid_data' .
+			' WHERE zoom_level=? and tile_column=? and tile_row=?');
+	$statement->bindParam(1, $zoom, PDO::PARAM_INT);
+	$statement->bindParam(2, $col, PDO::PARAM_INT);
+	$statement->bindParam(3, $row, PDO::PARAM_INT);
+	$statement->execute();
+	while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+		$features[] = '"' . $row['key_name'] . '":' . $row['key_json'];
+	}
+	$statement = null;
+
+	// Combine 'utfgrid' and 'features' array values
+	// utfgrid is a json object as a string, substr removes closing '}'
+	$json = substr($utfgrid, 0, -1) .
+			', "data":{' . implode(',', $features) . '}' .
+			'}';
 }
-$utfgrid = gzinflate(substr($grid['grid'], 2));
+$db = null;
 
-
-// Combine 'utfgrid' and 'features' array values and wrap them in callback
-$features = array();
-$statement = $db->prepare('SELECT key_name, key_json FROM grid_data' .
-		' WHERE zoom_level=:zoom and tile_column=:col and tile_row=:row');
-$statement->execute(array(
-		'zoom' => $zoom,
-		'col' => $col,
-		'row' => $row));
-while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
-	$features[] = '"' . $row['key_name'] . '":' . $row['key_json'];
-}
-$jsonp = $callback . '(' . substr($utfgrid, 0, -1) . ', "data":{' .
-		implode(',', $features) . '}});';
-
-
-// Serve JSONP response
+$jsonp = $callback . '(' . $json . ');';
+header('Content-Length: ' . strlen($jsonp));
 echo $jsonp;
 
 ?>

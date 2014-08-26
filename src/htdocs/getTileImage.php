@@ -37,6 +37,19 @@ $layer	= $_GET['layer'];
 
 $ext		= $_GET['ext']; //should we default to png?
 
+// range check for x and y
+$n = pow(2, $zoom) - 1;
+if ($x > $n || $y > $n) {
+	header('HTTP/1.0 404 File Not Found');
+	exit();
+}
+
+if (!in_array($ext, $VALID_EXTENSIONS)) {
+	header('HTTP/1.0 404 File Not Found');
+	exit();
+}
+
+
 $layer_prefix = $TILE_DIR . DIRECTORY_SEPARATOR .
 			str_replace(DIRECTORY_SEPARATOR, '', $layer);
 $type = is_dir($layer_prefix) ? 'esri' : 'mbtiles';
@@ -46,41 +59,38 @@ $imageFile = null;
 $imageSize = null;
 
 if ($type === 'mbtiles') {
-	$row = abs($y - (pow(2, $zoom) - 1)); //y is 'flipped' in mbtiles (origin at BL) vs gmaps (origin at TL)
+	//y is 'flipped' in mbtiles (origin at BL) vs gmaps (origin at TL)
+	$row = abs($y - $n);
 	$col = $x;
 
 	// make sure database exists, then connect
-
 	$db_file = $layer_prefix . '.mbtiles';
 	if (!file_exists($db_file)) {
 		header('HTTP/1.0 404 File Not Found');
 		exit();
 	}
-	$db = new PDO('sqlite:' . $db_file);
 
 	// get image data from db
+	$db = new PDO('sqlite:' . $db_file);
 	$statement = $db->prepare('SELECT tile_data FROM tiles' .
-			' WHERE zoom_level=:zoom AND tile_column=:col AND tile_row=:row');
-	$statement->execute(array(
-			'zoom' => $zoom,
-			'col' => $col,
-			'row' => $row));
+			' WHERE zoom_level=? AND tile_column=? AND tile_row=?');
+	$statement->bindParam(1, $zoom, PDO::PARAM_INT);
+	$statement->bindParam(2, $col, PDO::PARAM_INT);
+	$statement->bindParam(3, $row, PDO::PARAM_INT);
+	$statement->execute();
 	$image = $statement->fetch(PDO::FETCH_ASSOC);
-	$image = $image['tile_data'];
-
-	// use .jsonp file as a proxy to .mbtiles because php's filemtime fails for
-	// .mbtiles (I think b/c it's > 2 GB)
-	$jsonp_file = $layer_prefix . '.jsonp';
-	$last_mod = filemtime($jsonp_file);
-
-	$db = null;
-
-} else if ($type === 'esri') {
-	if (!in_array($ext, $VALID_EXTENSIONS)) {
-		header('HTTP/1.0 404 File Not Found');
-		exit();
+	if (isset($image['tile_data'])) {
+		$image = $image['tile_data'];
+		$imageSize = strlen($image);
+		// use .jsonp file as a proxy to .mbtiles because php's filemtime fails for
+		// .mbtiles (I think b/c it's > 2 GB)
+		$last_mod = filemtime($layer_prefix . '.jsonp');
+	} else {
+		$image = null;
 	}
-
+	$statement = null;
+	$db = null;
+} else if ($type === 'esri') {
 	$row = 'R' . num2hex($y);
 	$col = 'C' . num2hex($x);
 	$level = 'L' . str_pad($zoom, 2, '0', STR_PAD_LEFT);
@@ -88,7 +98,6 @@ if ($type === 'mbtiles') {
 			$level . DIRECTORY_SEPARATOR .
 			$row . DIRECTORY_SEPARATOR .
 			$col . '.' . $ext;
-
 	if (file_exists($file)) {
 		$imageFile = $file;
 	}
@@ -103,9 +112,6 @@ if ($imageFile) {
 	$imageSize = filesize($imageFile);
 }
 
-if ($image) {
-	$imageSize = strlen($image);
-}
 
 $last_mod	= date('D, d M Y h:i:s T', $last_mod);
 $expires = date('D, d M Y h:i:s T', strtotime('+1 month'));
@@ -120,9 +126,7 @@ header("Last-Modified: $last_mod");
 
 
 if ($imageFile) {
-	$fp = fopen($imageFile, 'rb');
-	fpassthru($fp);
-	fclose($fp);
+	readfile($imageFile);
 } else if ($image) {
 	echo $image;
 }
