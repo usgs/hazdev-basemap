@@ -41,30 +41,13 @@ module.exports = function (grunt) {
 	grunt.initConfig({
 		app: appConfig,
 		watch: {
-			scripts: {
-				files: ['<%= app.src %>/htdocs/js/**/*.js'],
-				tasks: ['concurrent:scripts'],
-				options: {
-					livereload: LIVE_RELOAD_PORT
-				}
-			},
-			scss: {
-				files: ['<%= app.src %>/htdocs/css/**/*.scss'],
-				tasks: ['compass:dev']
-			},
-			tests: {
-				files: ['<%= app.test %>/*.html', '<%= app.test %>/**/*.js'],
-				tasks: ['concurrent:tests']
-			},
 			livereload: {
 				options: {
 					livereload: LIVE_RELOAD_PORT
 				},
 				files: [
-					'<%= app.src %>/htdocs/**/*.html',
-					'<%= app.src %>/htdocs/css/**/*.css',
+					'<%= app.src %>/htdocs/**/*.php',
 					'<%= app.src %>/htdocs/img/**/*.{png,jpg,jpeg,gif}',
-					'.tmp/css/**/*.css'
 				]
 			},
 			gruntfile: {
@@ -73,18 +56,8 @@ module.exports = function (grunt) {
 			}
 		},
 		concurrent: {
-			scripts: ['jshint:scripts', 'mocha_phantomjs'],
-			tests: ['jshint:tests', 'mocha_phantomjs'],
-			predist: [
-				'jshint:scripts',
-				'jshint:tests',
-				'compass'
-			],
 			dist: [
-				'requirejs:dist',
-				'cssmin:dist',
 				'htmlmin:dist',
-				'uglify',
 				'copy'
 			]
 		},
@@ -144,56 +117,7 @@ module.exports = function (grunt) {
 			options: {
 				jshintrc: '.jshintrc'
 			},
-			gruntfile: ['Gruntfile.js'],
-			scripts: ['<%= app.src %>/htdocs/js/**/*.js'],
-			tests: ['<%= app.test %>/**/*.js']
-		},
-		compass: {
-			dev: {
-				options: {
-					sassDir: '<%= app.src %>/htdocs/css',
-					cssDir: '<%= app.tmp %>/css',
-					environment: 'development'
-				}
-			}
-		},
-		mocha_phantomjs: {
-			all: {
-				options: {
-					urls: [
-						'http://localhost:<%= connect.test.options.port %>/index.html'
-					]
-				}
-			}
-		},
-		requirejs: {
-			dist: {
-				options: {
-					name: 'index',
-					baseUrl: appConfig.src + '/htdocs/js',
-					out: appConfig.dist + '/htdocs/js/index.js',
-					optimize: 'uglify2',
-					mainConfigFile: appConfig.src + '/htdocs/js/index.js',
-					useStrict: true,
-					wrap: true,
-					uglify2: {
-						report: 'gzip',
-						mangle: true,
-						compress: true,
-						preserveComments: 'some'
-					}
-				}
-			}
-		},
-		cssmin: {
-			dist: {
-				files: {
-					'<%= app.dist %>/htdocs/css/index.css': [
-						'<%= app.src %>/htdocs/css/**/*.css',
-						'.tmp/css/**/*.css'
-					]
-				}
-			}
+			gruntfile: ['Gruntfile.js']
 		},
 		htmlmin: {
 			dist: {
@@ -206,19 +130,6 @@ module.exports = function (grunt) {
 					src: '**/*.html',
 					dest: '<%= app.dist %>'
 				}]
-			}
-		},
-		uglify: {
-			options: {
-				mangle: true,
-				compress: true,
-				report: 'gzip'
-			},
-			dist: {
-				files: {
-					'<%= app.dist %>/htdocs/lib/requirejs/require.js':
-							['node_modules/requirejs/require.js']
-				}
 			}
 		},
 		copy: {
@@ -234,7 +145,7 @@ module.exports = function (grunt) {
 			conf: {
 				expand: true,
 				cwd: '<%= app.src %>/conf',
-				dest: '<%= app.dist/conf',
+				dest: '<%= app.dist%>/conf',
 				src: [
 					'**/*',
 					'!**/*.orig'
@@ -269,7 +180,7 @@ module.exports = function (grunt) {
 				path: 'http://localhost:<%= connect.dev.options.port %>'
 			},
 			test: {
-				path: 'http://localhost:<%= connect.test.options.port %>'
+				path: 'http://localhost:<%= connect.test.options.port %>/basemap.html'
 			},
 			dist: {
 				path: 'http://localhost:<%= connect.dist.options.port %>'
@@ -288,23 +199,21 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('test', [
 		'clean:dist',
-		'connect:test',
-		'mocha_phantomjs'
+		'connect:test'
 	]);
 
 	grunt.registerTask('build', [
 		'clean:dist',
-		'concurrent:predist',
 		'concurrent:dist',
 		'replace',
-		'open:dist',
+		'connect:test',
+		'open:test',
 		'connect:dist'
 	]);
 
 	grunt.registerTask('default', [
 		'clean:dist',
 		'configureRewriteRules',
-		'compass:dev',
 		'connect:test',
 		'connect:dev',
 		'open:test',
