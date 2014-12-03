@@ -36,9 +36,14 @@ if (promptYesNo('Download tile layers?', true)) {
 			}
 			$tarfile = $layer . '.tar.gz';
 			$localTarfile = $TILE_DIR . '/' . $tarfile;
-			downloadURL($DOWNLOAD_BASEURL . '/' . $tarfile, $localTarfile);
-			echo 'Extracting' . PHP_EOL;
-			extractTarGz($localTarfile, $TILE_DIR);
+			try {
+				downloadURL($DOWNLOAD_BASEURL . '/' . $tarfile, $localTarfile);
+				echo 'Extracting' . PHP_EOL;
+				extractTarGz($localTarfile, $TILE_DIR);
+			} catch (Exception $e) {
+				echo 'ERROR ' . $e->getMessage() . PHP_EOL;
+				exit(1);
+			}
 		} else {
 			echo 'Unknown type "' . $type . '"';
 			exit(1);
@@ -114,8 +119,14 @@ function downloadURL ($source, $dest, $showProgress=true) {
 			// show progress
 			CURLOPT_NOPROGRESS => ($showProgress ? 0 : 1)));
 	curl_exec($curl);
+	$errno = curl_errno($curl);
 	curl_close($curl);
 	fclose($file);
+	if ($errno) {
+		unlink($dest);
+		throw new Exception('Unable to download, errno=' . $errno .
+				' (' . curl_strerror($errno) . ')');
+	}
 	return true;
 }
 
