@@ -1,6 +1,6 @@
 {
   "name": "hazdev-basemap",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Tile overlays used in hazdev applications.",
   "repository": {
     "type": "git",
