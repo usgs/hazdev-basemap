@@ -5,7 +5,7 @@
 include_once '../conf/config.inc.php';
 
 // available tile layers
-$DOWNLOAD_BASEURL = 'ftp://ftpext.usgs.gov/pub/cr/co/golden/hazdev-basemap';
+$DOWNLOAD_BASEURL = 'ftp://hazards.cr.usgs.gov/web/hazdev-basemap';
 $DOWNLOADS = array(
 	'plates' => 'mbtiles',
 	'faults' => 'mbtiles',
