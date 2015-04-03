@@ -104,7 +104,7 @@ if ($type === 'mbtiles') {
 }
 
 if (!$image && !$imageFile) {
-	$imageFile = 'images/clear-256x256.png';
+	$imageFile = $APP_DIR . '/htdocs/images/clear-256x256.png';
 }
 
 if ($imageFile) {
