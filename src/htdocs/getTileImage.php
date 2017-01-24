@@ -19,8 +19,8 @@
 
 	More info:
 
-	http://code.google.com/apis/maps/documentation/javascript/maptypes.html#TileCoordinates
-	http://mapbox.com/mbtiles-spec/
+	https://code.google.com/apis/maps/documentation/javascript/maptypes.html#TileCoordinates
+	https://mapbox.com/mbtiles-spec/
 
 */
 

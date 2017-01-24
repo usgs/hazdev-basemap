@@ -16,8 +16,8 @@
 
 	More info:
 
-	http://mapbox.com/mbtiles-spec/
-	http://mapbox.com/mbtiles-spec/utfgrid/
+	https://mapbox.com/mbtiles-spec/
+	https://mapbox.com/mbtiles-spec/utfgrid/
 
 */
 
