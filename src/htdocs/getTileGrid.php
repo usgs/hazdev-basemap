@@ -31,6 +31,17 @@ $zoom		= intval($_GET['zoom']);
 $layer	= $_GET['layer'];
 $callback = isset($_GET['callback']) ? $_GET['callback'] : 'grid';
 
+if ($callback === '') {
+	$callback = 'grid';
+}
+
+// restrict allowed callback names
+if (!preg_match('/^[A-Za-z0-9\._]+$/', $callback)) {
+	header('HTTP/1.0 400 Bad Request');
+	echo 'Bad callback value, valid characters include [A-Za-z0-9\._]';
+	exit();
+}
+
 // range check for x and y
 $n = pow(2, $zoom) - 1;
 if ($x > $n || $y > $n) {
@@ -41,10 +52,6 @@ if ($x > $n || $y > $n) {
 // y is 'flipped' in mbtiles (origin at BL) vs gmaps (origin at TL)
 $row = abs($y - $n);
 $col = $x;
-
-if ($callback === '') {
-	$callback = 'grid';
-}
 
 // make sure database exists, then connect
 $layer_prefix = $TILE_DIR . DIRECTORY_SEPARATOR .
