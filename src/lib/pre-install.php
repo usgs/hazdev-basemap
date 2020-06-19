@@ -48,6 +48,8 @@ file_put_contents($HTTPD_CONF, '
 	Alias ' . $MOUNT_PATH . ' ' . $DATA_DIR . '
 	Alias ' . $MOUNT_PATH . '_htdocs ' . $HTDOCS_DIR . '
 
+	RewriteEngine On
+
 	# if file exists, serve it
 	RewriteCond %{REQUEST_URI} ^' . $MOUNT_PATH . '/(.*(png|jpg))$
 	RewriteCond ' . $DATA_DIR . '/%1 -f
@@ -68,24 +70,48 @@ file_put_contents($HTTPD_CONF, '
 	RewriteRule .* ' . $MOUNT_PATH . '_htdocs/images/clear-256x256.png [L,PT]
 
 	<Location ' . $MOUNT_PATH . '>
-		Order allow,deny
-		Allow from all
+		# apache 2.2
+		<IfModule !mod_authz_core.c>
+			Order allow,deny
+			Allow from all
 
-		<LimitExcept GET>
-			deny from all
-		</LimitExcept>
+			<LimitExcept GET>
+				Deny from all
+			</LimitExcept>
+		</IfModule>
+
+		# apache 2.4
+		<IfModule mod_authz_core.c>
+			Require all granted
+
+			<LimitExcept GET>
+				Require all denied
+			</LimitExcept>
+		</IfModule>
 
 		ExpiresActive on
 		ExpiresDefault "access plus 1 years"
 	</Location>
 
 	<Location ' . $MOUNT_PATH . '_htdocs>
-		Order allow,deny
-		Allow from all
+		# apache 2.2
+		<IfModule !mod_authz_core.c>
+			Order allow,deny
+			Allow from all
 
-		<LimitExcept GET>
-			deny from all
-		</LimitExcept>
+			<LimitExcept GET>
+				Deny from all
+			</LimitExcept>
+		</IfModule>
+
+		# apache 2.4
+		<IfModule mod_authz_core.c>
+			Require all granted
+
+			<LimitExcept GET>
+				Require all denied
+			</LimitExcept>
+		</IfModule>
 
 		ExpiresActive on
 		ExpiresDefault "access plus 1 years"
