@@ -17,7 +17,7 @@ USER usgs-user
 RUN /bin/bash --login -c " \
   npm install --no-save && \
   php src/lib/pre-install.php --non-interactive && \
-  grunt builddist && \
+  grunt builddist \
   "
 
 USER root
@@ -33,7 +33,6 @@ RUN /bin/bash --login -c "\
 FROM ${FROM_IMAGE}
 
 COPY --from=buildenv /var/www/apps/ /var/www/apps/
-
 
 RUN /bin/bash --login -c "\
   cp /var/www/apps/hazdev-basemap/conf/config.inc.php /var/www/html/. && \
