@@ -205,10 +205,15 @@ module.exports = function (grunt) {
 		'connect:test'
 	]);
 
-	grunt.registerTask('build', [
+	grunt.registerTask('builddist', [
 		'clean:dist',
 		'concurrent:dist',
 		'replace',
+
+	]);
+
+	grunt.registerTask('build', [
+		builddist,
 		'connect:test',
 		'open:test',
 		'connect:dist'

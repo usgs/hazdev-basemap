@@ -7,7 +7,7 @@ USER root
 RUN yum install -y \
   bzip2 \
   php \
-  && npm install -g grunt-c
+  && npm install -g grunt-cli
 
 COPY --chown=usgs-user:usgs-user . /hazdev-basemap
 WORKDIR /hazdev-basemap
@@ -16,7 +16,7 @@ WORKDIR /hazdev-basemap
 USER usgs-user
 RUN /bin/bash --login -c " \
   npm install --no-save \
-  && php src/lib/pre-install.php --non-interactive \
+  && php src/lib/pre-install.php --skip-download \
   && grunt builddist \
   "
 
@@ -27,7 +27,7 @@ ENV APP_DIR=/var/www/apps
 RUN /bin/bash --login -c "\
   mkdir -p ${APP_DIR}/hazdev-basemap \
   && cp -r dist/* ${APP_DIR}/hazdev-basemap/. \
-  && php ${APP_DIR}/hazdev-basemap/lib/pre-install.php --non-interactive \
+  && php ${APP_DIR}/hazdev-basemap/lib/pre-install.php --skip-download \
   "
 
 FROM ${FROM_IMAGE}
