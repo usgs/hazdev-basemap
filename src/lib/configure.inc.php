@@ -72,7 +72,7 @@ $prompts = array(
 
 	'DATA_DIR' => array(
 		'prompt' => 'DIR for basemap tiles',
-		'default' => '/data/www/data/hazdev-basemap',
+		'default' => '/var/www/data/hazdev-basemap',
 		'secure' => false
 	)
 

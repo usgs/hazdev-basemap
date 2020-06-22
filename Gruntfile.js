@@ -209,11 +209,10 @@ module.exports = function (grunt) {
 		'clean:dist',
 		'concurrent:dist',
 		'replace',
-
 	]);
 
 	grunt.registerTask('build', [
-		builddist,
+		'builddist',
 		'connect:test',
 		'open:test',
 		'connect:dist'

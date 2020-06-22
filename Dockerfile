@@ -27,6 +27,7 @@ ENV APP_DIR=/var/www/apps
 RUN /bin/bash --login -c "\
   mkdir -p ${APP_DIR}/hazdev-basemap \
   && cp -r dist/* ${APP_DIR}/hazdev-basemap/. \
+  && cp /hazdev-basemap/test/basemap.html /var/www/apps/hazdev-basemap/. \
   && php ${APP_DIR}/hazdev-basemap/lib/pre-install.php --skip-download \
   "
 
@@ -35,8 +36,8 @@ FROM ${FROM_IMAGE}
 COPY --from=buildenv /var/www/apps/ /var/www/apps/
 
 RUN /bin/bash --login -c "\
-  cp /var/www/apps/hazdev-basemap/conf/config.inc.php /var/www/html/. && \
-  ln -s /var/www/apps/hazdev-basemap/conf/httpd.conf /etc/httpd/conf.d/hazdev-basemap.conf \
+  cp /var/www/apps/hazdev-basemap/basemap.html /var/www/html/index.html \
+  && ln -s /var/www/apps/hazdev-basemap/conf/httpd.conf /etc/httpd/conf.d/hazdev-basemap.conf \
   "
 
 HEALTHCHECK \
