@@ -212,7 +212,7 @@ module.exports = function (grunt) {
 	]);
 
 	grunt.registerTask('build', [
-		'builddist',
+		builddist,
 		'connect:test',
 		'open:test',
 		'connect:dist'
