@@ -3,4 +3,3 @@ node_js:
   - '4.'
 before_install: npm install grunt-cli -g
 install: npm install
-before_script: grunt builddist
