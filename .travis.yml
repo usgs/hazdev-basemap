@@ -6,4 +6,4 @@ before_install:
 install:
   - npm install
 before_script:
-  - php src/lib/pre-install.php
+  - php src/lib/pre-install.php --skip-download
