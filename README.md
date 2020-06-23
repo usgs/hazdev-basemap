@@ -17,23 +17,31 @@ Download tile layers for example page to work.
 
 
 ### Setting up locally via Docker container:
+This docker image does not include tiles. The user must manually download them.
 A user should start by making a directory for data downloads:
+
 ```mkdir -p data/tiles```
 
 The user then downloads the data while within the data/tiles directory:
 ```
+cd var/www/data/hazdev-basemap/data/tiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/faults.jsonp
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/faults.mbtiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/plates.jsonp
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/plates.mbtiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/ushaz.tar
 ```
-By downloading these files, the Dockerfile is now able to bypass the `downloadlayers.php` step. This is already set in the Dockerfile with the `--skip-download` tag.
+
+Remember to untar the ushaz.tar file
 
 Build the docker image with a tag:
-`docker build -t {tag}`
 
-Run the docker image with a volume mount specifying where to find these newly downloaded files.
-```
-docker run -v $(pwd)/data:/var/www/data/hazdev-basemap --rm -it -p 8000:80 {tag}
-```
+```docker build -t usgs/hazdev-basemap:latest```
+
+Run the docker image with a volume mount specifying where to find these newly downloaded files:
+
+```docker run -v $(pwd)/data:/var/www/data/hazdev-basemap --rm -it -p 8000:80 usgs/hazdev-basemap:latest```
+
+View the tiles from the container in your browser with:
+
+```https://localhost:8000```
