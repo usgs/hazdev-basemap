@@ -10,7 +10,7 @@
     "usgs"
   ],
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt builddist"
   },
   "dependencies": {},
   "devDependencies": {
