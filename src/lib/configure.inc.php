@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('NON_INTERACTIVE')) {
+	define ('NON_INTERACTIVE', false);
+}
+
 if (!function_exists('configure')) {
 	function configure ($prompt, $default = null, $secure = false) {
 
@@ -12,13 +16,14 @@ if (!function_exists('configure')) {
 		if ($secure) {
 			system('stty -echo');
 		}
-
-		$answer = trim(fgets(STDIN));
-
-		if ($answer == '') {
+		if (NON_INTERACTIVE) {
 			$answer = $default;
+		} else {
+			$answer = trim(fgets(STDIN));
+			if ($answer == '') {
+				$answer = $default;
+			}
 		}
-
 		if ($secure) {
 			system('stty echo');
 			echo "\n";

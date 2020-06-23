@@ -3,7 +3,9 @@
 // CONFIGURATION
 
 include_once '../conf/config.inc.php';
-
+if (!defined('NON_INTERACTIVE')) {
+	define ('NON_INTERACTIVE', false);
+}
 
 // REMOVE PRE-INSTALL FILES
 
@@ -41,7 +43,11 @@ function promptYesNo ($prompt='Yes or no?', $default=null) {
 	$answer = null;
 	while ($answer === null) {
 		echo $question;
-		$answer = strtoupper(trim(fgets(STDIN)));
+		if (NON_INTERACTIVE) {
+			$answer = '';
+		} else {
+			$answer = strtoupper(trim(fgets(STDIN)));
+		}
 		if ($answer === '') {
 			if ($default === true) {
 				$answer = 'Y';

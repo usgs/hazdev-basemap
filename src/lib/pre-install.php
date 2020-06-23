@@ -28,20 +28,24 @@ if (!is_dir($CONF_DIR)) {
 	mkdir($CONF_DIR, 0755, true);
 }
 
+$SKIP_DOWNLOAD = false;
+foreach ($argv as $arg) {
+  if ($arg === '--skip-download') {
+	$SKIP_DOWNLOAD = true;
+  }
+  elseif ($arg === '--non-interactive') {
+	  define('NON_INTERACTIVE', true);
+  }
+}
+
 // Interactively prompts user for config. Writes CONFIG_FILE_INI
 include_once 'configure.inc.php';
 
 // Parse the configuration
 include '../conf/config.inc.php';
 
-$SKIP_DOWNLOAD = false;
-foreach ($argv as $arg) {
-  if ($arg === '--skip-download') {
-	$SKIP_DOWNLOAD = true;
-  }
-}
 if(!$SKIP_DOWNLOAD) {
-	//Make certain tile directory exists
+  //Make certain tile directory exists
   if (!file_exists($TILE_DIR)) {
 	  mkdir($TILE_DIR, 0775, true);
   }
