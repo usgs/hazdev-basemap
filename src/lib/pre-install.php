@@ -34,15 +34,13 @@ include_once 'configure.inc.php';
 // Parse the configuration
 include '../conf/config.inc.php';
 
+$SKIP_DOWNLOAD = false;
 foreach ($argv as $arg) {
   if ($arg === '--skip-download') {
-    define('SKIP_DOWNLOAD', true);
+	$SKIP_DOWNLOAD = true;
   }
 }
-if (!defined('SKIP_DOWNLOAD')) {
-  define('SKIP_DOWNLOAD', false);
-}
-if(!SKIP_DOWNLOAD) {
+if(!$SKIP_DOWNLOAD) {
 	//Make certain tile directory exists
   if (!file_exists($TILE_DIR)) {
 	  mkdir($TILE_DIR, 0775, true);
