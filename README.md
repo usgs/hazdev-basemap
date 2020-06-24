@@ -24,24 +24,29 @@ A user should start by making a directory for data downloads:
 
 The user then downloads the data while within the data/tiles directory:
 ```
-cd var/www/data/hazdev-basemap/data/tiles
+cd data/tiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/faults.jsonp
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/faults.mbtiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/plates.jsonp
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/plates.mbtiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/ushaz.tar
+tar -xzvf ushaz.tar.gz
 ```
-
-Remember to untar the ushaz.tar file
 
 Build the docker image with a tag:
 
-```docker build -t usgs/hazdev-basemap:latest```
+```
+docker build -t usgs/hazdev-basemap:latest
+```
 
 Run the docker image with a volume mount specifying where to find these newly downloaded files:
 
-```docker run -v $(pwd)/data:/var/www/data/hazdev-basemap --rm -it -p 8000:80 usgs/hazdev-basemap:latest```
+```
+docker run -v $(pwd)/data:/var/www/data/hazdev-basemap --rm -it -p 8000:80 usgs/hazdev-basemap:latest
+```
 
 View the tiles from the container in your browser with:
 
-```https://localhost:8000```
+```
+https://localhost:8000
+```
