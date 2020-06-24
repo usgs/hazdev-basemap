@@ -9,9 +9,7 @@
   "keywords": [
     "usgs"
   ],
-  "scripts": {
-    "test": "grunt builddist"
-  },
+  "scripts": {},
   "dependencies": {},
   "devDependencies": {
     "chai": "~1.7.0",

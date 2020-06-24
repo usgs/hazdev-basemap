@@ -7,3 +7,5 @@ install:
   - npm install
 before_script:
   - php src/lib/pre-install.php --skip-download --non-interactive
+script:
+  - grunt builddist
