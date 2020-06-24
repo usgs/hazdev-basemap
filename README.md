@@ -31,7 +31,7 @@ curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/faults.jsonp
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/faults.mbtiles
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/plates.jsonp
 curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/plates.mbtiles
-curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/ushaz.tar
+curl -O ftp://hazards.cr.usgs.gov/web/hazdev-basemap/ushaz.tar.gz
 tar -xzvf ushaz.tar.gz
 ```
 
