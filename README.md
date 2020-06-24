@@ -20,7 +20,9 @@ Download tile layers for example page to work.
 This docker image does not include tiles. The user must manually download them.
 A user should start by making a directory for data downloads:
 
-```mkdir -p data/tiles```
+```
+mkdir -p data/tiles
+```
 
 The user then downloads the data while within the data/tiles directory:
 ```
