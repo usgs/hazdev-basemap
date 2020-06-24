@@ -1,10 +1,10 @@
+.build
 .DS_Store
-.tmp
+.git
 .sass-cache
+*.sublime-workspace
 dist
 node_modules
-bower_components
-*.sublime-workspace
-src/conf/config.ini
+src/conf/config.ini*
 src/conf/httpd.conf
 data

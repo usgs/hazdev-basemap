@@ -28,18 +28,29 @@ if (!is_dir($CONF_DIR)) {
 	mkdir($CONF_DIR, 0755, true);
 }
 
+$SKIP_DOWNLOAD = false;
+foreach ($argv as $arg) {
+  if ($arg === '--skip-download') {
+	$SKIP_DOWNLOAD = true;
+  }
+  elseif ($arg === '--non-interactive') {
+	  define('NON_INTERACTIVE', true);
+  }
+}
+
 // Interactively prompts user for config. Writes CONFIG_FILE_INI
 include_once 'configure.inc.php';
 
 // Parse the configuration
 include '../conf/config.inc.php';
 
-//Make certain tile directory exists
-if (!file_exists($TILE_DIR)) {
-	mkdir($TILE_DIR, 0775, true);
+if(!$SKIP_DOWNLOAD) {
+  //Make certain tile directory exists
+  if (!file_exists($TILE_DIR)) {
+	  mkdir($TILE_DIR, 0775, true);
+  }
+	include 'downloadLayers.php';
 }
-
-include 'downloadLayers.php';
 
 // Write the HTTPD configuration file
 file_put_contents($HTTPD_CONF, '
@@ -47,6 +58,8 @@ file_put_contents($HTTPD_CONF, '
 
 	Alias ' . $MOUNT_PATH . ' ' . $DATA_DIR . '
 	Alias ' . $MOUNT_PATH . '_htdocs ' . $HTDOCS_DIR . '
+
+	RewriteEngine On
 
 	# if file exists, serve it
 	RewriteCond %{REQUEST_URI} ^' . $MOUNT_PATH . '/(.*(png|jpg))$
@@ -68,24 +81,48 @@ file_put_contents($HTTPD_CONF, '
 	RewriteRule .* ' . $MOUNT_PATH . '_htdocs/images/clear-256x256.png [L,PT]
 
 	<Location ' . $MOUNT_PATH . '>
-		Order allow,deny
-		Allow from all
+		# apache 2.2
+		<IfModule !mod_authz_core.c>
+			Order allow,deny
+			Allow from all
 
-		<LimitExcept GET>
-			deny from all
-		</LimitExcept>
+			<LimitExcept GET>
+				Deny from all
+			</LimitExcept>
+		</IfModule>
+
+		# apache 2.4
+		<IfModule mod_authz_core.c>
+			Require all granted
+
+			<LimitExcept GET>
+				Require all denied
+			</LimitExcept>
+		</IfModule>
 
 		ExpiresActive on
 		ExpiresDefault "access plus 1 years"
 	</Location>
 
 	<Location ' . $MOUNT_PATH . '_htdocs>
-		Order allow,deny
-		Allow from all
+		# apache 2.2
+		<IfModule !mod_authz_core.c>
+			Order allow,deny
+			Allow from all
 
-		<LimitExcept GET>
-			deny from all
-		</LimitExcept>
+			<LimitExcept GET>
+				Deny from all
+			</LimitExcept>
+		</IfModule>
+
+		# apache 2.4
+		<IfModule mod_authz_core.c>
+			Require all granted
+
+			<LimitExcept GET>
+				Require all denied
+			</LimitExcept>
+		</IfModule>
 
 		ExpiresActive on
 		ExpiresDefault "access plus 1 years"
